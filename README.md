@@ -17,6 +17,8 @@ You need a modded instance of Valheim ([BepInEx](https://valheim.thunderstore.io
 ## How to configure the mod? 
 Open `fr.galathil.MoreVanillaBuilds.cfg` in your `BepInEx\config` with a notepad.
 
+You can find a FULL configuration made by AlpZz [here](https://github.com/galathil/MoreVanillaBuilds/releases/download/1.0.0/fr.galathil.MoreVanillaBuilds.cfg). Just replace existing configuration.
+
 You need to edit the configuration file with client/server **off** ! If you use an ingame configuration manager, you need to restart the game/server to apply configuration.
 
 In the `main` section you found : 

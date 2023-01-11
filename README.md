@@ -1,4 +1,5 @@
 # MoreVanillaBuilds
+[Changelog](https://github.com/galathil/MoreVanillaBuilds/blob/main/CHANGELOG.md)
 ## What is MoreVanillaBuilds?
 MoreVanillaBuilds (MVB) is a Valheim mod to make all vanilla prefabs buildable with the hammer (survival way). This mod is inspirated by [BetterCreative](https://github.com/heinermann/Valheim_mods/tree/main/BetterCreative).
 

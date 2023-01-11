@@ -127,7 +127,6 @@ namespace MoreVanillaBuilds
                 {
                     piece.m_enabled = true;
                     piece.m_canBeRemoved = true;
-                    //piece.m_clipEverything = true;
                     piece.m_groundPiece = false;
                     piece.m_groundOnly = false;
                     piece.m_noInWater = false;
@@ -282,7 +281,6 @@ namespace MoreVanillaBuilds
 
         public static void PrepareGhostPrefab(GameObject ghost)
         {
-            //ghost.DestroyComponent<CharacterDrop>();
             UnityEngine.Object.Destroy(ghost.GetComponent<CharacterDrop>());
 
             // Only keep components that are part of a whitelist
@@ -310,16 +308,21 @@ namespace MoreVanillaBuilds
                 UnityEngine.Object.DestroyImmediate(component);
             }
 
-            // Needed to make some things work, like Stalagmite, Rock_destructible, Rock_7, silvervein, etc.
-            Bounds desiredBounds = new Bounds();
-            foreach (Renderer renderer in ghost.GetComponentsInChildren<Renderer>())
+            // Only if there is no collider on the ghost.
+            // Without it, the pieces doesn't snap "by the bottom"
+            if (ghost.GetComponent<Collider>()==null)
             {
-                desiredBounds.Encapsulate(renderer.bounds);
-            }
-            var collider = ghost.AddComponent<BoxCollider>();
-            collider.center = desiredBounds.center;
-            collider.size = desiredBounds.size;
 
+                // Needed to make some things work, like Stalagmite, Rock_destructible, Rock_7, silvervein, etc.
+                Bounds desiredBounds = new Bounds();
+                foreach (Renderer renderer in ghost.GetComponentsInChildren<Renderer>())
+                {
+                    desiredBounds.Encapsulate(renderer.bounds);
+                }
+                var collider = ghost.AddComponent<BoxCollider>();
+                collider.center = desiredBounds.center;
+                collider.size = desiredBounds.size;
+            }
         }
     }
 }

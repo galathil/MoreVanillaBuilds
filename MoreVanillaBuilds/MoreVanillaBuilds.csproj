@@ -342,6 +342,7 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="MVBConfig.cs" />
+    <Compile Include="MVBLog.cs" />
     <Compile Include="MVBPrefabConfig.cs" />
     <Compile Include="Patches.cs" />
     <Compile Include="Prefabs.cs" />

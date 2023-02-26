@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using BepInEx.Configuration;
 using UnityEngine.EventSystems;
+using System.Reflection;
 
 namespace MoreVanillaBuilds
 {
@@ -18,7 +19,7 @@ namespace MoreVanillaBuilds
 
         public static void FindAndRegisterPrefabs()
         {
-            Main.logger.LogInfo("FindAndRegisterPrefabs()");
+            MVBLog.info("FindAndRegisterPrefabs()");
             ZNetScene.instance.m_prefabs
             .Where(go => go.transform.parent == null && !ShouldIgnorePrefab(go))
             .OrderBy(go => go.name)
@@ -29,7 +30,7 @@ namespace MoreVanillaBuilds
 
         private static readonly HashSet<string> IgnoredPrefabs = new HashSet<string>() {
           "Player", "Valkyrie", "HelmetOdin", "CapeOdin", "CastleKit_pot03", "Ravens", "TERRAIN_TEST", "PlaceMarker", "Circle_section",
-          "guard_stone_test", "Haldor", "odin"
+          "guard_stone_test", "Haldor", "odin", "dvergrprops_wood_stake"
         };
 
         private static bool ShouldIgnorePrefab(GameObject prefab)
@@ -149,19 +150,21 @@ namespace MoreVanillaBuilds
             {
                 if (MVBConfig.isVerbose())
                 {
-                    Main.logger.LogInfo("Ignore " + prefab.name);
+                    MVBLog.info("Ignore " + prefab.name);
                 }
                 return;
             }
 
+            /*
             if (MVBConfig.isVerbose())
             {
-                Main.logger.LogInfo("Initialize '" + prefab.name + "'");
+                MVBLog.info("Initialize '" + prefab.name + "'");
                 foreach (Component compo in prefab.GetComponents<Component>())
                 {
-                    Main.logger.LogInfo("  - " + compo.GetType().Name);
+                    MVBLog.info("  - " + compo.GetType().Name);
                 }
             }
+            */
 
             MVBPrefabConfig prefabConfig = MVBConfig.loadPrefabConfig(prefab);
             if (!prefabConfig.isEnable.Value && !MVBConfig.isForceAllPrefabs())
@@ -170,6 +173,7 @@ namespace MoreVanillaBuilds
                 return;
             }
 
+            PatchPrefabIfNeeded(prefab);
             InitPieceData(prefab);
 
             var pieceConfig = new PieceConfig
@@ -197,6 +201,541 @@ namespace MoreVanillaBuilds
             var piece = new CustomPiece(prefab, true, pieceConfig);
             PieceManager.Instance.AddPiece(piece);
             AddedPrefabs.Add(prefab.name);
+        }
+
+        /**
+         * Fix collider and snap points on the prefab if necessary
+         */
+        private static void PatchPrefabIfNeeded(GameObject prefab)
+        {
+            switch (prefab.name)
+            {
+                case "blackmarble_column_3":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 4, -1),
+                        new Vector3(1, 4, 1),
+                        new Vector3(-1, 4, 1),
+                        new Vector3(1, 4, -1),
+
+                        new Vector3(-1, 2, -1),
+                        new Vector3(1, 2, 1),
+                        new Vector3(-1, 2, 1),
+                        new Vector3(1, 2, -1),
+
+                        new Vector3(-1, 0, -1),
+                        new Vector3(1, 0, 1),
+                        new Vector3(-1, 0, 1),
+                        new Vector3(1, 0, -1),
+
+                        new Vector3(-1, -2, -1),
+                        new Vector3(1, -2, 1),
+                        new Vector3(-1, -2, 1),
+                        new Vector3(1, -2, -1),
+
+                        new Vector3(-1, -4, -1),
+                        new Vector3(1, -4, 1),
+                        new Vector3(-1, -4, 1),
+                        new Vector3(1, -4, -1),
+                    });
+
+                    break;
+                case "blackmarble_creep_4x1x1":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-0.5f, 2, -0.5f),
+                        new Vector3(0.5f, 2, 0.5f),
+                        new Vector3(-0.5f, 2, 0.5f),
+                        new Vector3(0.5f, 2, -0.5f),
+
+                        new Vector3(-0.5f, -2, -0.5f),
+                        new Vector3(0.5f, -2, 0.5f),
+                        new Vector3(-0.5f, -2, 0.5f),
+                        new Vector3(0.5f, -2, -0.5f),
+
+                        new Vector3(0, -2, 0),
+                        new Vector3(0, 2, 0),
+                    });
+
+                    // ? Place the piece randomly in horizontal or vertical position ?
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("new").gameObject.GetComponent<RandomPieceRotation>());
+
+                    break;
+                case "blackmarble_creep_4x2x1":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1, 2, -0.5f),
+                        new Vector3(1, 2, 0.5f),
+                        new Vector3(-1, 2, -0.5f),
+                        new Vector3(-1, 2, 0.5f),
+
+                        new Vector3(1, -2, -0.5f),
+                        new Vector3(1, -2, 0.5f),
+                        new Vector3(-1, -2, -0.5f),
+                        new Vector3(-1, -2, 0.5f),
+
+                        new Vector3(0, -2, 0),
+                        new Vector3(0, 2, 0),
+                    });
+
+                    // ? Place the piece randomly in horizontal or vertical position ?
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("new").gameObject.GetComponent<RandomPieceRotation>());
+                    break;
+                case "blackmarble_creep_slope_inverted_1x1x2":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-0.5f, 1, -0.5f),
+                        new Vector3(0.5f, 1, 0.5f),
+                        new Vector3(-0.5f, 1, 0.5f),
+                        new Vector3(0.5f, 1, -0.5f),
+
+                        new Vector3(0.5f, -1, -0.5f),
+                        new Vector3(-0.5f, -1, -0.5f),
+                    });
+                    break;
+                case "blackmarble_creep_slope_inverted_2x2x1":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 0.5f, -1),
+                        new Vector3(1, 0.5f,1),
+                        new Vector3(-1, 0.5f, 1),
+                        new Vector3(1, 0.5f, -1),
+
+                        new Vector3(-1, -0.5f, -1),
+                        new Vector3(1, -0.5f, -1),
+                    });
+                    break;
+                case "blackmarble_creep_stair":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 1, -1),
+                        new Vector3(1, 1, -1),
+                        new Vector3(-1, 0, -1),
+                        new Vector3(1, 0, -1),
+                        new Vector3(-1, 0, 1),
+                        new Vector3(1, 0, 1),
+                    });
+                    break;
+                case "blackmarble_floor_large":
+                    List<Vector3> points = new List<Vector3>();
+                    for (int y = -1; y <= 1; y += 2)
+                    {
+                        for (int x = -4; x <= 4; x += 2)
+                        {
+                            for (int z = -4; z <= 4; z += 2)
+                            {
+                                points.Add(new Vector3(x, y, z));
+                            }
+                        }
+                    }
+                    generateSnapPoints(prefab, points);
+                    break;
+                case "blackmarble_head_big01" :
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 1, -1),
+                        new Vector3(1, 1,1),
+                        new Vector3(-1, 1, 1),
+                        new Vector3(1, 1, -1),
+
+                        new Vector3(1, -1, -1),
+                        new Vector3(-1, -1, -1),
+                    });
+                    break;
+                case "blackmarble_head_big02":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 1, -1),
+                        new Vector3(1, 1,1),
+                        new Vector3(-1, 1, 1),
+                        new Vector3(1, 1, -1),
+
+                        new Vector3(1, -1, -1),
+                        new Vector3(-1, -1, -1),
+                    });
+                    break;
+                case "blackmarble_out_2":
+                    // Temp fix collider
+                    UnityEngine.Object.DestroyImmediate(prefab.GetComponent<MeshCollider>());
+                    prefab.AddComponent<BoxCollider>();
+                    prefab.GetComponent<BoxCollider>().size = new Vector3(2, 2, 2);
+                    break;
+                case "blackmarble_tile_floor_1x1":
+                    prefab.transform.Find("_snappoint").gameObject.transform.localPosition = new Vector3(0.5f,0.1f,0.5f);
+                    prefab.transform.Find("_snappoint (1)").gameObject.transform.localPosition = new Vector3(0.5f, 0.1f, -0.5f);
+                    prefab.transform.Find("_snappoint (2)").gameObject.transform.localPosition = new Vector3(-0.5f, 0.1f, 0.5f);
+                    prefab.transform.Find("_snappoint (3)").gameObject.transform.localPosition = new Vector3(-0.5f, 0.1f, -0.5f);
+                    break;
+                case "blackmarble_tile_floor_2x2":
+                    prefab.transform.Find("_snappoint").gameObject.transform.localPosition = new Vector3(1, 0.1f, 1);
+                    prefab.transform.Find("_snappoint (1)").gameObject.transform.localPosition = new Vector3(1, 0.1f, -1);
+                    prefab.transform.Find("_snappoint (2)").gameObject.transform.localPosition = new Vector3(-1, 0.1f, 1);
+                    prefab.transform.Find("_snappoint (3)").gameObject.transform.localPosition = new Vector3(-1, 0.1f, -1);
+                    break;
+                case "blackmarble_tile_wall_1x1":
+                    prefab.transform.Find("_snappoint").gameObject.transform.localPosition = new Vector3(0.5f, 0, 0.1f);
+                    prefab.transform.Find("_snappoint (1)").gameObject.transform.localPosition = new Vector3(0.5f, 1, 0.1f);
+                    prefab.transform.Find("_snappoint (2)").gameObject.transform.localPosition = new Vector3(-0.5f, 0, 0.1f);
+                    prefab.transform.Find("_snappoint (3)").gameObject.transform.localPosition = new Vector3(-0.5f, 1, 0.1f);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (4)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (5)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (6)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (7)").gameObject);
+                    break;
+                case "blackmarble_tile_wall_2x2":
+                    prefab.transform.Find("_snappoint").gameObject.transform.localPosition = new Vector3(1, 0, 0.1f);
+                    prefab.transform.Find("_snappoint (1)").gameObject.transform.localPosition = new Vector3(1, 2, 0.1f);
+                    prefab.transform.Find("_snappoint (2)").gameObject.transform.localPosition = new Vector3(-1, 0, 0.1f);
+                    prefab.transform.Find("_snappoint (3)").gameObject.transform.localPosition = new Vector3(-1, 2, 0.1f);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (4)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (5)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (6)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (7)").gameObject);
+                    break;
+                case "blackmarble_tile_wall_2x4":
+                    prefab.transform.Find("_snappoint").gameObject.transform.localPosition = new Vector3(1, 0, 0.1f);
+                    prefab.transform.Find("_snappoint (1)").gameObject.transform.localPosition = new Vector3(1, 4, 0.1f);
+                    prefab.transform.Find("_snappoint (2)").gameObject.transform.localPosition = new Vector3(-1, 0, 0.1f);
+                    prefab.transform.Find("_snappoint (3)").gameObject.transform.localPosition = new Vector3(-1, 4, 0.1f);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (4)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (5)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (6)").gameObject);
+                    UnityEngine.Object.DestroyImmediate(prefab.transform.Find("_snappoint (7)").gameObject);
+                    break;
+                case "dungeon_queen_door":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2.5f, 0, 0),
+                        new Vector3(-2.5f, 0, 0),
+                    });
+                    break;
+                case "dungeon_sunkencrypt_irongate":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1, -0.4f, 0),
+                        new Vector3(-1, -0.4f, 0),
+                    });
+                    break;
+                case "sunken_crypt_gate":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1, 0, 0),
+                        new Vector3(-1, 0, 0),
+                    });
+                    break;
+                case "dvergrprops_wood_beam":
+                    /*generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(3, 0.45f, 0.45f),
+                        new Vector3(3, 0.45f, -0.42f),
+                        new Vector3(3, -0.45f, -0.42f),
+                        new Vector3(3, -0.45f, -0.45f),
+
+                        new Vector3(-3, 0.45f, 0.45f),
+                        new Vector3(-3, 0.45f, -0.42f),
+                        new Vector3(-3, -0.45f, -0.42f),
+                        new Vector3(-3, -0.45f, -0.45f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(3, 0, 0),
+                        new Vector3(-3, 0, 0),
+                    });
+                    break;
+                case "dvergrprops_wood_pole":
+                    /*generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0.45f, 2, 0.45f),
+                        new Vector3(-0.45f, 2, 0.45f),
+                        new Vector3(0.45f, 2, -0.45f),
+                        new Vector3(-0.45f, 2, -0.45f),
+                        new Vector3(0.45f, -2, 0.45f),
+                        new Vector3(-0.45f, -2, 0.45f),
+                        new Vector3(0.45f, -2, -0.45f),
+                        new Vector3(-0.45f, -2, -0.45f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0, 2, 0),
+                        new Vector3(0, -2, 0),
+                    });
+                    break;
+                case "dvergrprops_wood_wall":
+                    // Patch only the floor
+                    /*generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2.2f, -2, -0.45f),
+                        new Vector3(2.2f, -2, 0.45f),
+                        new Vector3(-2.2f, -2, -0.45f),
+                        new Vector3(-2.2f, -2, 0.45f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2.2f, 2, 0),
+                        new Vector3(-2.2f, 2, 0),
+                        new Vector3(2.2f, -2, 0),
+                        new Vector3(-2.2f, -2, 0),
+                    });
+                    break;
+                case "dvergrtown_arch":
+                    /*
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1, 0, -0.5f),
+                        new Vector3(1, 0, 0.5f),
+                        new Vector3(1, 1, -0.5f),
+                        new Vector3(1, 1, 0.5f),
+
+                        new Vector3(-1, 1, -0.5f),
+                        new Vector3(-1, 1, 0.5f),
+
+                        new Vector3(-1, -1, 0.5f),
+                        new Vector3(-1, -1, -0.5f),
+                        new Vector3(0, -1, 0.5f),
+                        new Vector3(0, -1, -0.5f),
+                    });
+                    */
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1, 0.5f, 0),
+                    });
+                    break;
+
+                case "dvergrtown_secretdoor":
+                    /*
+                     generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2, 0, -0.35f),
+                        new Vector3(2, 0, 0.4f),
+                        new Vector3(-2, 0, -0.35f),
+                        new Vector3(-2, 0, 0.4f),
+                        
+                        new Vector3(2, 4, -0.35f),
+                        new Vector3(2, 4, 0.4f),
+                        new Vector3(-2, 4, -0.35f),
+                        new Vector3(-2, 4, 0.4f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2, 0, 0),
+                        new Vector3(-2, 0, 0),
+                        new Vector3(2, 4, 0),
+                        new Vector3(-2, 4, 0),
+                    });
+                    break;
+                case "dvergrtown_slidingdoor":
+                    /*generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2, 0, 0),
+                        new Vector3(2, 0, 0.2f),
+                        new Vector3(-2, 0, -0.2f),
+                        new Vector3(-2, 0, 0.2f),
+
+                        new Vector3(2, 4, -0.2f),
+                        new Vector3(2, 4, 0.2f),
+                        new Vector3(-2, 4, -0.2f),
+                        new Vector3(-2, 4, 0.2f),
+                    });
+                    */
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2, 0, 0),
+                        new Vector3(-2, 0, 0),
+                        new Vector3(2, 4, 0),
+                        new Vector3(-2, 4, 0),
+                    });
+                    break;
+                case "dvergrtown_stair_corner_wood_left":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0.25f, 0, -0.25f),
+                        new Vector3(0.25f, 0, 0.25f),
+                        new Vector3(0.25f, 1.1f, -0.25f),
+                        new Vector3(0.25f, 1.1f, 0.25f),
+
+                        new Vector3(0.25f, 0, 2),
+                        new Vector3(-0.25f, 1.1f, -0.25f),
+
+                        new Vector3(-2, 1.1f, -0.25f),
+
+
+                    });
+                    break;
+                case "dvergrtown_wood_beam":
+                    /*
+                     generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(3, 0.45f, 0.45f),
+                        new Vector3(3, 0.45f, -0.42f),
+                        new Vector3(3, -0.45f, -0.42f),
+                        new Vector3(3, -0.45f, -0.45f),
+
+                        new Vector3(-3, 0.45f, 0.45f),
+                        new Vector3(-3, 0.45f, -0.42f),
+                        new Vector3(-3, -0.45f, -0.42f),
+                        new Vector3(-3, -0.45f, -0.45f),
+                    });
+                    */
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(3, 0, 0),
+                        new Vector3(-3, 0, 0),
+                    });
+                    break;
+                case "dvergrtown_wood_pole":
+                    /*generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0.45f, 2, 0.45f),
+                        new Vector3(-0.45f, 2, 0.45f),
+                        new Vector3(0.45f, 2, -0.45f),
+                        new Vector3(-0.45f, 2, -0.45f),
+                        new Vector3(0.45f, -2, 0.45f),
+                        new Vector3(-0.45f, -2, 0.45f),
+                        new Vector3(0.45f, -2, -0.45f),
+                        new Vector3(-0.45f, -2, -0.45f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0, -2, 0),
+                        new Vector3(0, 2, 0),
+                    });
+                    break;
+                case "dvergrtown_wood_stake":
+                    // Patch only the floor
+                    /*
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0.15f, 0, 0.15f),
+                        new Vector3(-0.15f, 0, 0.15f),
+                        new Vector3(0.15f, 0, -0.15f),
+                        new Vector3(-0.15f, 0, -0.15f),
+                    });
+                    */
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0, 0, 0),
+                    });
+                    break;
+                case "dvergrtown_wood_crane":
+                    /*
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0.4f, -3, 0.4f),
+                        new Vector3(-0.4f, -3, 0.4f),
+                        new Vector3(0.4f, -3, -0.4f),
+                        new Vector3(-0.4f, -3, -0.4f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(0, -3, 0),
+                    });
+                    break;
+                case "dvergrtown_wood_support":
+                    /*
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-2.4f, 0, -0.4f),
+                        new Vector3(-2.4f, 0, 0.4f),
+                        new Vector3(-1.6f, 0, -0.4f),
+                        new Vector3(-1.6f, 0, 0.4f),
+
+                        new Vector3(2.4f, 0, -0.4f),
+                        new Vector3(2.4f, 0, 0.4f),
+                        new Vector3(1.6f, 0, -0.4f),
+                        new Vector3(1.6f, 0, 0.4f),
+                    });*/
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-2, 0, 0),
+                        new Vector3(2, 0, 0),
+                    });
+                    break;
+                case "dvergrtown_wood_wall01":
+                    // Fix collider y
+                    prefab.transform.Find("wallcollider").transform.localPosition = new Vector3(0, 0, 0);
+                    /*
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(3, -2.7f, -0.45f),
+                        new Vector3(3, -2.7f, 0.45f),
+                        new Vector3(-3, -2.7f, -0.45f),
+                        new Vector3(-3, -2.7f, 0.45f),
+
+                        new Vector3(3, 2.7f, -0.45f),
+                        new Vector3(3, 2.7f, 0.45f),
+                        new Vector3(-3, 2.7f, -0.45f),
+                        new Vector3(-3, 2.7f, 0.45f),
+                    });
+                    */
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-3, -2.7f, 0),
+                        new Vector3(3, -2.7f, 0),
+                        new Vector3(-3, 2.7f, 0),
+                        new Vector3(3, 2.7f, 0),
+                    });
+                    break;
+                case "dvergrtown_wood_wall02":
+                    /*
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(3, -0.6f, -0.25f),
+                        new Vector3(3, -0.6f, 0.25f),
+                        new Vector3(-3, -0.6f, -0.25f),
+                        new Vector3(-3, -0.6f, 0.25f),
+
+                        new Vector3(3, 4.6f, -0.25f),
+                        new Vector3(3, 4.6f, 0.25f),
+                        new Vector3(-3, 4.6f, -0.25f),
+                        new Vector3(-3, 4.6f, 0.25f),
+                    });
+                    */
+
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-3, -0.5f, 0),
+                        new Vector3(3, -0.5f, 0),
+                        new Vector3(-3, 4.5f, 0),
+                        new Vector3(3, 4.5f, 0),
+                    });
+
+                    break;
+                case "dvergrtown_wood_wall03":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1.1f, 0, 0),
+                        new Vector3(-1.1f, 0, 0),
+
+                        new Vector3(2, 2, 0),
+                        new Vector3(-2, 2, 0),
+
+                        new Vector3(1.1f, 4, 0),
+                        new Vector3(-1.1f, 4, 0),
+                    });
+                    break;
+                case "goblin_roof_45d":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(1, 0, 1),
+                        new Vector3(-1, 0, 1),
+                        new Vector3(1, 2, -1),
+                        new Vector3(-1, 2, -1),
+                    });
+                    break;
+                case "goblin_roof_45d_corner":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 0, -1),
+                        new Vector3(1, 0, 1),
+                    });
+                    break;
+                case "goblin_woodwall_1m":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-0.5f, 0, 0),
+                        new Vector3(0.5f, 0, 0),
+                        new Vector3(-0.5f, 2, 0),
+                        new Vector3(0.5f, 2, 0),
+                    });
+                    break;
+                case "goblin_woodwall_2m":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(-1, 0, 0),
+                        new Vector3(1, 0, 0),
+                        new Vector3(-1, 2, 0),
+                        new Vector3(1, 2, 0),
+                    });
+                    break;
+                case "Ice_floor":
+                    generateSnapPoints(prefab, new Vector3[] {
+                        new Vector3(2, 1, 2),
+                        new Vector3(-2, 1, -2),
+                        new Vector3(2, 1, -2),
+                        new Vector3(-2, 1, 2),
+
+                        new Vector3(2, -1, 2),
+                        new Vector3(-2, -1, -2),
+                        new Vector3(2, -1, -2),
+                        new Vector3(-2, -1, 2),
+                    });
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private static void generateSnapPoints(GameObject prefab, Vector3[] positions)
+        {
+            for(int i=0; i<positions.Length; i++)
+            {
+                GameObject snappoint = new GameObject("_snappointt"+i);
+                snappoint.transform.parent = prefab.transform;
+                snappoint.transform.localPosition = positions[i];
+                snappoint.tag = "snappoint";
+            }
+        }
+
+        private static void generateSnapPoints(GameObject prefab, List<Vector3> positions)
+        {
+            generateSnapPoints(prefab, positions.ToArray());
         }
 
         private static string GetPrefabFriendlyName(GameObject prefab)
@@ -243,13 +782,7 @@ namespace MoreVanillaBuilds
         //  - PickableItem.RandomItem.m_itemPrefab
         private static Sprite CreatePrefabIcon(GameObject prefab)
         {
-            Sprite result = RenderManager.Instance.Render(prefab, RenderManager.IsometricRotation);
-            if (result == null)
-            {
-                GameObject spawnedCreaturePrefab = prefab.GetComponent<CreatureSpawner>()?.m_creaturePrefab;
-                if (spawnedCreaturePrefab != null)
-                    result = RenderManager.Instance.Render(spawnedCreaturePrefab, RenderManager.IsometricRotation);
-            }
+            Sprite result = generateObjectIcon(prefab);
 
             if (result == null)
             {
@@ -258,25 +791,21 @@ namespace MoreVanillaBuilds
                 {
                     GameObject item = randomItemPrefabs[0].m_itemPrefab?.gameObject;
                     if (item != null)
-                        result = RenderManager.Instance.Render(item, RenderManager.IsometricRotation);
+                    {
+                        result = generateObjectIcon(item);
+                    }
                 }
             }
 
-            if (result == null || SpriteIsBlank(result))
-            {
-                // TODO: Do something if there's still no image
-            }
             return result;
         }
 
-        private static bool SpriteIsBlank(Sprite sprite)
+        private static Sprite generateObjectIcon(GameObject obj)
         {
-            Color[] pixels = sprite.texture.GetPixels();
-            foreach (var color in pixels)
-            {
-                if (color.a != 0) return false;
-            }
-            return true;
+            RenderManager.RenderRequest request = new RenderManager.RenderRequest(obj);
+            request.Rotation = RenderManager.IsometricRotation;
+            request.UseCache = true;
+            return RenderManager.Instance.Render(request);
         }
 
         public static void PrepareGhostPrefab(GameObject ghost)
@@ -308,21 +837,25 @@ namespace MoreVanillaBuilds
                 UnityEngine.Object.DestroyImmediate(component);
             }
 
+            // Needed to make some things work, like Stalagmite, Rock_destructible, Rock_7, silvervein, etc.
+            
+            
+            Bounds desiredBounds = new Bounds();
+            foreach (Renderer renderer in ghost.GetComponentsInChildren<Renderer>())
+            {
+                desiredBounds.Encapsulate(renderer.bounds);
+            }
+            var collider = ghost.AddComponent<BoxCollider>();
+            collider.center = desiredBounds.center;
+            collider.size = desiredBounds.size;
+            
+
             // Only if there is no collider on the ghost.
             // Without it, the pieces doesn't snap "by the bottom"
-            if (ghost.GetComponent<Collider>()==null)
-            {
+            //if (ghost.GetComponent<Collider>() == null)
+            //{
 
-                // Needed to make some things work, like Stalagmite, Rock_destructible, Rock_7, silvervein, etc.
-                Bounds desiredBounds = new Bounds();
-                foreach (Renderer renderer in ghost.GetComponentsInChildren<Renderer>())
-                {
-                    desiredBounds.Encapsulate(renderer.bounds);
-                }
-                var collider = ghost.AddComponent<BoxCollider>();
-                collider.center = desiredBounds.center;
-                collider.size = desiredBounds.size;
-            }
+            //}
         }
     }
 }

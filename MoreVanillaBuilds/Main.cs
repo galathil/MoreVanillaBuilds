@@ -10,14 +10,14 @@ namespace MoreVanillaBuilds
     {
         const string pluginGUID = "fr.galathil.MoreVanillaBuilds";
         const string pluginName = "MoreVanillaBuilds";
-        const string pluginVersion = "1.0.0";
-        public static ManualLogSource logger;
+        const string pluginVersion = "1.1.3";
+        
         public static ConfigFile config;
         private readonly Harmony harmony = new Harmony(pluginGUID);
 
         public void Awake()
         {
-            logger = Logger;
+            MVBLog.init(Logger);
             MVBConfig.setConfigFile(Config);
             MVBConfig.loadMainConfig();
             harmony.PatchAll();

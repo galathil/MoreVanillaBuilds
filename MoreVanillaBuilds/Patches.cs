@@ -1,4 +1,6 @@
 ﻿using HarmonyLib;
+using Jotunn.Managers;
+using Jotunn.Utils;
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -105,7 +107,27 @@ namespace MoreVanillaBuilds
                 }
                 sync.m_syncPosition = true;
                 sync.m_syncRotation = true;
+
             }
         }
+
+        // Detours Player.SetLocalPlayer
+        // Refs:
+        //  - Console.TryRunCommand
+        //  - Player.SetGodMode
+        //  - Player.SetGhostMode
+        //  - Player.ToggleNoPlacementCost
+        //  - Player.m_placeDelay
+        /*
+        [HarmonyPatch(typeof(Player), "SetLocalPlayer"), HarmonyPostfix]
+        static void SetLocalPlayerPostfix(Player __instance)
+        {
+            Console.instance.TryRunCommand("devcommands", silentFail: true, skipAllowedCheck: true);
+            Player.m_debugMode = true;
+            __instance.SetGodMode(true);
+            __instance.SetGhostMode(true);
+            __instance.ToggleNoPlacementCost();
+        }
+        */
     }
 }

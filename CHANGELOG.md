@@ -1,7 +1,54 @@
 # MoreVanillaBuilds Changelog
 
-## Future release :
- - Fix snap condition (by the bottom)
+## 1.1.3
+ - Fix miscellaneous prefabs mistakes : 
+   - Disable `dvergrprops_wood_stake` beacause it create unbreakable ghosts, please use `dvergrtown_wood_stake` instead
+   - Fix `blackmarble_creep_4x1x1` and `blackmarble_creep_4x2x1`. They sometimes spawn horizontaly or verticaly, force to vertical.
+ - Fix prefabs snappoints : 
+   - `blackmarble_column_3`
+   - `blackmarble_creep_4x1x1`
+   - `blackmarble_creep_4x2x1`
+   - `blackmarble_creep_slope_inverted_1x1x2`
+   - `blackmarble_creep_slope_inverted_2x2x1`
+   - `blackmarble_creep_stair`
+   - `blackmarble_floor_large`
+   - `blackmarble_head_big01`
+   - `blackmarble_head_big02`
+   - `blackmarble_tile_floor_1x1`
+   - `blackmarble_tile_floor_2x2`
+   - `blackmarble_tile_wall_1x1`
+   - `blackmarble_tile_wall_2x2`
+   - `blackmarble_tile_wall_2x4`
+   - `dungeon_queen_door`
+   - `dungeon_sunkencrypt_irongate`
+   - `sunken_crypt_gate`
+   - `dvergrprops_wood_beam`
+   - `dvergrprops_wood_pole`
+   - `dvergrprops_wood_wall`
+   - `dvergrtown_arch`
+   - `dvergrtown_secretdoor`
+   - `dvergrtown_slidingdoor`
+   - `dvergrtown_stair_corner_wood_left`
+   - `dvergrtown_wood_beam`
+   - `dvergrtown_wood_pole`
+   - `dvergrtown_wood_stake`
+   - `dvergrtown_wood_crane`
+   - `dvergrtown_wood_support`
+   - `dvergrtown_wood_wall01`
+   - `dvergrtown_wood_wall02`
+   - `dvergrtown_wood_wall03`
+   - `goblin_roof_45d_corner`
+   - `goblin_roof_45d`
+   - `goblin_woodwall_1m`
+   - `goblin_woodwall_2m`
+   - `Ice_floor`
+ - Fix prefabs collider : 
+   - `blackmarble_out_2`
+   - `dvergrtown_wood_wall01`
+ - Technical updates : 
+   - Implement a custom logger
+   - Godmode for dev purpose (simply uncomment related code (SetLocalPlayerPostfix) in Patches.cs
+   - Optimize icons rendering in the hammer (using Jotunn caching)
 
 ## 1.0.0
  - First stable version for AlpZz

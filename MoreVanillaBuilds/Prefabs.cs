@@ -194,6 +194,7 @@ namespace MoreVanillaBuilds
                     RequirementConfig reqConf = new RequirementConfig();
                     reqConf.Item = values[0];
                     reqConf.Amount = int.Parse(values[1]);
+                    reqConf.Recover = true;
                     pieceConfig.AddRequirement(reqConf);
                 }
             }

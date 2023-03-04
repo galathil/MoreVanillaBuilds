@@ -1,5 +1,6 @@
 # MoreVanillaBuilds Changelog
-
+## 1.1.4
+ - Fix pieces loots
 ## 1.1.3
  - Fix miscellaneous prefabs mistakes : 
    - Disable `dvergrprops_wood_stake` beacause it create unbreakable ghosts, please use `dvergrtown_wood_stake` instead
